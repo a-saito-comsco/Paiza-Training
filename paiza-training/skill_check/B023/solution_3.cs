@@ -6,30 +6,18 @@ class Program
 {
 
     const int MatchLength = 7;
-
-    //public static int[][] SAnswers = new int[4][];
-            
     static void Main()
     {
         DataClass.GetData();
-        //DataClass.PrintData(DataClass.Number);
-        DataClass.GetGroup();
-        //DataClass.PrintAnswers();
-        //int[] vector = {0,1,1,1,0,1,0};
-        //Console.Write(Matches.CorrectNumber(vector));
-        /*SAnswers[0] = new[] { 0, 1, 3, 4 };
-        SAnswers[1] = new[] { 9, 2, 1, 3 };
-        SAnswers[2] = new[] { 2, 4, 3, 5 };
-        SAnswers[3] = new[] { 8, 3, 4, 7 };*/
-        //DataClass.SortAnswers(4);
-        //DataClass.PrintAnswers(4);
+        //DataClass.GetGroup();
+        
     }
 
     internal static class DataClass
     {
         public static string TextLine;
         public static int[] Number;
-        public static int[][] Answer;
+        public static int[][] PreAnswers;
         public static int[][] Answers;
 
         public static void GetData()
@@ -45,50 +33,50 @@ class Program
         public static void GetGroup()
         {
             int num = 0;
-            Answer = new int[TextLine.Length][];
+            PreAnswers = new int[TextLine.Length][];
+
+            for (int i = 0; i < TextLine.Length; i++)
+            {
+                PreAnswers[i] = new int[MatchLength];
+                for (int j = 0; j < MatchLength; j++)
+                {
+                    PreAnswers[i][j] = Matches.DegitPatterns[Number[i]][j];
+                }
+            }
+
             Answers = new int[1000][];
             for (int i = 0; i < 1000; i++)
             {
                 Answers[i] = new int[TextLine.Length];
             }
-            for (int i = 0; i < TextLine.Length; i++)
-                {
-                    Answer[i] = new int[MatchLength];
-                    for (int j = 0; j < MatchLength; j++)
-                    {
-                        Answer[i][j] = Matches.List[Number[i]][j];
-                    }
-                }
 
             for (int i = 0; i < TextLine.Length; i++)
-            {   
+            {
                 for (int j = 0; j < MatchLength; j++)
                 {
-                    if (Answer[i][j] == 1)
+                    if (PreAnswers[i][j] == 1)
                     {
-                        Answer[i][j] = 0;
+                        PreAnswers[i][j] = 0;
                         for (int k = 0; k < TextLine.Length; k++)
                         {
                             for (int l = 0; l < MatchLength; l++)
                             {
                                 if (i != k || j != l)
                                 {
-                                    if (Answer[k][l] == 0)
+                                    if (PreAnswers[k][l] == 0)
                                     {
-                                        Answer[k][l] = 1;
-                                        if (Matches.CorrectNumber(Answer[i]) != -1 && Matches.CorrectNumber(Answer[k]) != -1)
+                                        PreAnswers[k][l] = 1;
+                                        if (Matches.CorrectNumber(PreAnswers[i]) != -1 && Matches.CorrectNumber(PreAnswers[k]) != -1)
                                         {
-                                            //Console.Write("i = " + i + ", j = " + j + ", k =" + k + ", l =" + l + " ");
-                                            //Console.WriteLine("");
-                                            AddAnswer(Answer, num);
+                                            AddAnswer(num);
                                             num += 1;
                                         }
-                                        Answer[k][l] = 0;
+                                        PreAnswers[k][l] = 0;
                                     }
                                 }
                             }
                         }
-                        Answer[i][j] = 1;
+                        PreAnswers[i][j] = 1;
                     }
                 }
             }
@@ -98,17 +86,8 @@ class Program
             }
             else
             {
-                /*var sorted = Answers.OrderBy(row => row[0]).ToArray();
-                for (int i = 1; i < 7; i++)
-                {
-                    sorted = sorted.OrderBy(row => row[i]).ToArray();
-                }*/
                 SortAnswers(num);
                 PrintAnswers(num);
-                /* foreach (var row in sorted)
-                { 
-                    Console.WriteLine(string.Join("", row));
-                    }*/
             }
         }
 
@@ -121,15 +100,13 @@ class Program
             Console.WriteLine("");
         }
 
-        public static void AddAnswer(int[][] Ans, int n)
+        public static void AddAnswer(int n)
         {
             
             for (int i = 0; i < TextLine.Length; i++)
             {
-                Answers[n][i] = Matches.CorrectNumber(Ans[i]);
-                //Console.Write(Matches.CorrectNumber(Ans[i]));
+                Answers[n][i] = Matches.CorrectNumber(PreAnswers[i]);
             }
-        // Console.WriteLine(" " + n);
         }
 
         public static void SortAnswers(int n)
@@ -143,9 +120,6 @@ class Program
                     {
                         if (Answers[i][k] > Answers[j][k])
                         {
-                            //PrintAnswers(4);
-                            //Console.Write("i = " + i + ", j = " + j + ", k =" + k + " ");
-                            //return;
                             for (int l = 0; l < TextLine.Length; l++)
                             {
                                 temp = Answers[i][l];
@@ -177,40 +151,47 @@ class Program
 
     internal static class Matches
     {
-        public static int[][] List = new int[][]
+        public static Dictionary<int, int[]> DegitPatterns = new Dictionary<int, int[]>
         {
-            new int[] { 1, 1, 1, 0, 1, 1, 1 },
-            new int[] { 0, 0, 1, 0, 0, 1, 0 },
-            new int[] { 1, 0, 1, 1, 1, 0, 1 },
-            new int[] { 1, 0, 1, 1, 0, 1, 1 },
-            new int[] { 0, 1, 1, 1, 0, 1, 0 },
-            new int[] { 1, 1, 0, 1, 0, 1, 1 },
-            new int[] { 1, 1, 0, 1, 1, 1, 1 },
-            new int[] { 1, 0, 1, 0, 0, 1, 0 },
-            new int[] { 1, 1, 1, 1, 1, 1, 1 },
-            new int[] { 1, 1, 1, 1, 0, 1, 1 },
+            { 0, new int[] { 1, 1, 1, 0, 1, 1, 1 } },
+            { 1, new int[] { 0, 0, 1, 0, 0, 1, 0 } },
+            { 2, new int[] { 1, 0, 1, 1, 1, 0, 1 } },
+            { 3, new int[] { 1, 0, 1, 1, 0, 1, 1 } },
+            { 4, new int[] { 0, 1, 1, 1, 0, 1, 0 } },
+            { 5, new int[] { 1, 1, 0, 1, 0, 1, 1 } },
+            { 6, new int[] { 1, 1, 0, 1, 1, 1, 1 } },
+            { 7, new int[] { 1, 0, 1, 0, 0, 1, 0 } },
+            { 8, new int[] { 1, 1, 1, 1, 1, 1, 1 } },
+            { 9, new int[] { 1, 1, 1, 1, 0, 1, 1 } },
         };
 
+        public static Dictionary<String, int> ReversePatterns = new Dictionary<string, int>
+        {
+            { "1110111" ,0 },
+            { "0010010" ,1 },
+            { "1011101" ,2 },
+            { "1011011" ,3 },
+            { "0111010" ,4 },
+            { "1101011" ,5 },
+            { "1101111" ,6 },
+            { "1010010" ,7 },
+            { "1111111" ,8 },
+            { "1111011" ,9 },
+        };
+        
         public static int CorrectNumber(int[] Match)
         {
-            bool isValid;
-            for (int i = 0; i < 10; i++)
+            String keyString = String.Join(",", Match);
+            Console.WriteLine(keyString);//改修中途
+            /*if (ReversePatterns.Containskey(keyString))
             {
-                isValid = true;
-                for (int j = 0; j < MatchLength; j++)
-                {
-                    if (Match[j] != Matches.List[i][j])
-                    {
-                        isValid = false;
-                        break;
-                    }
-                }
-                if (isValid == true)
-                {
-                    return i;
-                }
+                ReversePatterns.TryGetValue(keyString, out var name);
+                return name;
             }
-            return -1;
+            else
+            {
+                return -1;
+            }*/
         }
     }
 }
