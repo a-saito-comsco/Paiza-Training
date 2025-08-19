@@ -120,28 +120,30 @@ class Program
 
     internal static class Matches
     {
-        public static int[][] DigitPatterns = new int[][]
+        // 数字をキーとしたマッチ棒パターンの辞書
+        public static Dictionary<int, int[]> DigitPatterns = new Dictionary<int, int[]>
         {
-            new int[] { 1, 1, 1, 0, 1, 1, 1 }, // 0
-            new int[] { 0, 0, 1, 0, 0, 1, 0 }, // 1
-            new int[] { 1, 0, 1, 1, 1, 0, 1 }, // 2
-            new int[] { 1, 0, 1, 1, 0, 1, 1 }, // 3
-            new int[] { 0, 1, 1, 1, 0, 1, 0 }, // 4
-            new int[] { 1, 1, 0, 1, 0, 1, 1 }, // 5
-            new int[] { 1, 1, 0, 1, 1, 1, 1 }, // 6
-            new int[] { 1, 0, 1, 0, 0, 1, 0 }, // 7
-            new int[] { 1, 1, 1, 1, 1, 1, 1 }, // 8
-            new int[] { 1, 1, 1, 1, 0, 1, 1 }, // 9
+            { 0, new int[] { 1, 1, 1, 0, 1, 1, 1 } }, // 0
+            { 1, new int[] { 0, 0, 1, 0, 0, 1, 0 } }, // 1
+            { 2, new int[] { 1, 0, 1, 1, 1, 0, 1 } }, // 2
+            { 3, new int[] { 1, 0, 1, 1, 0, 1, 1 } }, // 3
+            { 4, new int[] { 0, 1, 1, 1, 0, 1, 0 } }, // 4
+            { 5, new int[] { 1, 1, 0, 1, 0, 1, 1 } }, // 5
+            { 6, new int[] { 1, 1, 0, 1, 1, 1, 1 } }, // 6
+            { 7, new int[] { 1, 0, 1, 0, 0, 1, 0 } }, // 7
+            { 8, new int[] { 1, 1, 1, 1, 1, 1, 1 } }, // 8
+            { 9, new int[] { 1, 1, 1, 1, 0, 1, 1 } }  // 9
         };
 
         public static int CorrectNumber(int[] Match)
         {
-            for (int i = 0; i < 10; i++)
+            // パターンが一致する数字を検索
+            foreach (var kvp in DigitPatterns)
             {
                 bool isValid = true;
                 for (int j = 0; j < MatchLength; j++)
                 {
-                    if (Match[j] != Matches.DigitPatterns[i][j])
+                    if (Match[j] != kvp.Value[j])
                     {
                         isValid = false;
                         break;
@@ -149,10 +151,10 @@ class Program
                 }
                 if (isValid)
                 {
-                    return i;
+                    return kvp.Key;
                 }
             }
-            return -1;
+            return -1; // 無効な数字
         }
     }
 }
