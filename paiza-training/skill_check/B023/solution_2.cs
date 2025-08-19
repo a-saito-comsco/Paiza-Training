@@ -46,7 +46,7 @@ class Program
                 Answer[i] = new int [MatchLength];
                 for (int j = 0; j < MatchLength; j++)
                 {
-                    Answer[i][j] = Matches.List[Number[i]][j];
+                    Answer[i][j] = Matches.DigitPatterns[Number[i]][j];
                 }
             }
 
@@ -120,35 +120,34 @@ class Program
 
     internal static class Matches
     {
-        public static int[][] List = new int[][]
+        public static int[][] DigitPatterns = new int[][]
         {
-            new int[] { 1, 1, 1, 0, 1, 1, 1 },
-            new int[] { 0, 0, 1, 0, 0, 1, 0 },
-            new int[] { 1, 0, 1, 1, 1, 0, 1 },
-            new int[] { 1, 0, 1, 1, 0, 1, 1 },
-            new int[] { 0, 1, 1, 1, 0, 1, 0 },
-            new int[] { 1, 1, 0, 1, 0, 1, 1 },
-            new int[] { 1, 1, 0, 1, 1, 1, 1 },
-            new int[] { 1, 0, 1, 0, 0, 1, 0 },
-            new int[] { 1, 1, 1, 1, 1, 1, 1 },
-            new int[] { 1, 1, 1, 1, 0, 1, 1 },
+            new int[] { 1, 1, 1, 0, 1, 1, 1 }, // 0
+            new int[] { 0, 0, 1, 0, 0, 1, 0 }, // 1
+            new int[] { 1, 0, 1, 1, 1, 0, 1 }, // 2
+            new int[] { 1, 0, 1, 1, 0, 1, 1 }, // 3
+            new int[] { 0, 1, 1, 1, 0, 1, 0 }, // 4
+            new int[] { 1, 1, 0, 1, 0, 1, 1 }, // 5
+            new int[] { 1, 1, 0, 1, 1, 1, 1 }, // 6
+            new int[] { 1, 0, 1, 0, 0, 1, 0 }, // 7
+            new int[] { 1, 1, 1, 1, 1, 1, 1 }, // 8
+            new int[] { 1, 1, 1, 1, 0, 1, 1 }, // 9
         };
 
         public static int CorrectNumber(int[] Match)
         {
-            int flag;
             for (int i = 0; i < 10; i++)
             {
-                flag = 1;
+                bool isValid = true;
                 for (int j = 0; j < MatchLength; j++)
                 {
-                    if (Match[j] != Matches.List[i][j])
+                    if (Match[j] != Matches.DigitPatterns[i][j])
                     {
-                        flag = 0;
+                        isValid = false;
                         break;
                     }
                 }
-                if (flag == 1)
+                if (isValid)
                 {
                     return i;
                 }
