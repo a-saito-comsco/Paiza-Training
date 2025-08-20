@@ -18,7 +18,7 @@ class Program
         public static string TextLine;
         public static int[] Number;
         public static int[][] PreAnswers;
-        public static int[][] Answers;
+        public static List<int[]> Answers;
 
         public static void GetData()
         {
@@ -32,7 +32,6 @@ class Program
 
         public static void GetGroup()
         {
-            int num = 0;
             PreAnswers = new int[TextLine.Length][];
 
             for (int i = 0; i < TextLine.Length; i++)
@@ -44,11 +43,8 @@ class Program
                 }
             }
 
-            Answers = new int[1000][];
-            for (int i = 0; i < 1000; i++)
-            {
-                Answers[i] = new int[TextLine.Length];
-            }
+            // List<T>を使用して動的にサイズを管理
+            Answers = new List<int[]>();
 
             for (int i = 0; i < TextLine.Length; i++)
             {
@@ -68,8 +64,7 @@ class Program
                                         PreAnswers[k][l] = 1;
                                         if (Matches.CorrectNumber(PreAnswers[i]) != -1 && Matches.CorrectNumber(PreAnswers[k]) != -1)
                                         {
-                                            AddAnswer(num);
-                                            num += 1;
+                                            AddAnswer();
                                         }
                                         PreAnswers[k][l] = 0;
                                     }
@@ -80,14 +75,14 @@ class Program
                     }
                 }
             }
-            if (num == 0)
+            if (Answers.Count == 0)
             {
                 Console.WriteLine("none");
             }
             else
             {
-                SortAnswers(num);
-                PrintAnswers(num);
+                SortAnswers();
+                PrintAnswers();
             }
         }
 
@@ -100,49 +95,27 @@ class Program
             Console.WriteLine("");
         }
 
-        public static void AddAnswer(int n)
+        public static void AddAnswer()
         {
-            
+            var newAnswer = new int[TextLine.Length];
             for (int i = 0; i < TextLine.Length; i++)
             {
-                Answers[n][i] = Matches.CorrectNumber(PreAnswers[i]);
+                newAnswer[i] = Matches.CorrectNumber(PreAnswers[i]);
             }
+            Answers.Add(newAnswer);
         }
 
-        public static void SortAnswers(int n)
+        public static void SortAnswers()
         {
-            int temp;
-            for (int i = 0; i < n - 1; i++)
-            {
-                for (int j = i + 1; j < n; j++)
-                {
-                    for (int k = 0; k < TextLine.Length; k++)
-                    {
-                        if (Answers[i][k] > Answers[j][k])
-                        {
-                            for (int l = 0; l < TextLine.Length; l++)
-                            {
-                                temp = Answers[i][l];
-                                Answers[i][l] = Answers[j][l];
-                                Answers[j][l] = temp;
-                            }
-                            break;
-                        }
-                        else if (Answers[i][k] < Answers[j][k])
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
+            Answers.Sort((a, b) => string.Join("", a).CompareTo(string.Join("", b)));
         }
-        public static void PrintAnswers(int n)
+        public static void PrintAnswers()
         {
-            for (int i = 0; i < n; i++)
+            foreach (var answer in Answers)
             {
                 for (int j = 0; j < TextLine.Length; j++)
                 {
-                    Console.Write(Answers[i][j]);
+                    Console.Write(answer[j]);
                 }
                 Console.WriteLine("");
             }
