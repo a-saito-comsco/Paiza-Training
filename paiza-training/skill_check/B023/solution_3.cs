@@ -9,16 +9,26 @@ class Program
     static void Main()
     {
         DataClass.GetData();
-        //DataClass.GetGroup();
-        
+        Matches.MakeTransTable();
+        DataClass.GetGroup();
+        DataClass.Answers.Sort();
+        DataClass.Answers.ForEach(x => Console.WriteLine(x));
+        if (DataClass.Answers.Count == 0)
+        {
+            Console.WriteLine("none");
+        }
     }
 
     internal static class DataClass
     {
         public static string TextLine;
         public static int[] Number;
-        public static int[][] PreAnswers;
-        public static int[][] Answers;
+        public static int[] Answer;
+
+        public static List<string> Answers;
+        public static List<(int before, int after)> MinusTable = new List<(int before, int after)>();
+        public static List<(int before, int after)> PlusTable = new List<(int before, int after)>();
+        public static List<(int before, int after)> BothTable = new List<(int before, int after)>();
 
         public static void GetData()
         {
@@ -32,137 +42,65 @@ class Program
 
         public static void GetGroup()
         {
-            int num = 0;
-            PreAnswers = new int[TextLine.Length][];
-
-            for (int i = 0; i < TextLine.Length; i++)
+            Answers = new List<string>();
+            Answer = new int[TextLine.Length];
+            for (int i = 0; i < DataClass.TextLine.Length; i++)
             {
-                PreAnswers[i] = new int[MatchLength];
-                for (int j = 0; j < MatchLength; j++)
-                {
-                    PreAnswers[i][j] = Matches.DegitPatterns[Number[i]][j];
-                }
+                Answer[i] = Number[i];
             }
 
-            Answers = new int[1000][];
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < DataClass.TextLine.Length; i++)
             {
-                Answers[i] = new int[TextLine.Length];
-            }
-
-            for (int i = 0; i < TextLine.Length; i++)
-            {
-                for (int j = 0; j < MatchLength; j++)
+                for (int j = 0; j < DataClass.TextLine.Length; j++)
                 {
-                    if (PreAnswers[i][j] == 1)
+                    if (i == j)
                     {
-                        PreAnswers[i][j] = 0;
-                        for (int k = 0; k < TextLine.Length; k++)
+                        var items = BothTable.FindAll(x => x.before == Number[i]);
+                        foreach (var item in items)
                         {
-                            for (int l = 0; l < MatchLength; l++)
+                            Answer[i] = item.after;
+                            string st = string.Join("", Answer);
+                            Answers.Add(st);
+                            Answer[i] = Number[i];
+                        }
+                    }
+                    else
+                    {
+                        var itemIs = MinusTable.FindAll(y => y.before == Number[i] && (y.after != 0 || y.before == 8));
+                        var itemJs = PlusTable.FindAll(z => z.before == Number[j] && z.after != 0);
+                        foreach (var itemI in itemIs)
+                        {
+                            foreach (var itemJ in itemJs)
                             {
-                                if (i != k || j != l)
+                                Answer[i] = itemI.after;
+                                Answer[j] = itemJ.after;
+                                string st = string.Join("", Answer);
+                                Answers.Add(st);
+                                for (int k = 0; k < DataClass.TextLine.Length; k++)
                                 {
-                                    if (PreAnswers[k][l] == 0)
-                                    {
-                                        PreAnswers[k][l] = 1;
-                                        if (Matches.CorrectNumber(PreAnswers[i]) != -1 && Matches.CorrectNumber(PreAnswers[k]) != -1)
-                                        {
-                                            AddAnswer(num);
-                                            num += 1;
-                                        }
-                                        PreAnswers[k][l] = 0;
-                                    }
+                                    Answer[k] = Number[k];
                                 }
                             }
                         }
-                        PreAnswers[i][j] = 1;
-                    }
-                }
-            }
-            if (num == 0)
-            {
-                Console.WriteLine("none");
-            }
-            else
-            {
-                SortAnswers(num);
-                PrintAnswers(num);
-            }
-        }
-
-        public static void PrintData(int[] Num)
-        {
-            for (int i = 0; i < TextLine.Length; i++)
-            {
-                Console.Write(Num[i]);
-            }
-            Console.WriteLine("");
-        }
-
-        public static void AddAnswer(int n)
-        {
-            
-            for (int i = 0; i < TextLine.Length; i++)
-            {
-                Answers[n][i] = Matches.CorrectNumber(PreAnswers[i]);
-            }
-        }
-
-        public static void SortAnswers(int n)
-        {
-            int temp;
-            for (int i = 0; i < n - 1; i++)
-            {
-                for (int j = i + 1; j < n; j++)
-                {
-                    for (int k = 0; k < TextLine.Length; k++)
-                    {
-                        if (Answers[i][k] > Answers[j][k])
-                        {
-                            for (int l = 0; l < TextLine.Length; l++)
-                            {
-                                temp = Answers[i][l];
-                                Answers[i][l] = Answers[j][l];
-                                Answers[j][l] = temp;
-                            }
-                            break;
-                        }
-                        else if (Answers[i][k] < Answers[j][k])
-                        {
-                            break;
-                        }
                     }
                 }
             }
         }
-        public static void PrintAnswers(int n)
-        {
-            for (int i = 0; i < n; i++)
-            {
-                for (int j = 0; j < TextLine.Length; j++)
-                {
-                    Console.Write(Answers[i][j]);
-                }
-                Console.WriteLine("");
-            }
-        }  
     }
-
     internal static class Matches
     {
-        public static Dictionary<int, int[]> DegitPatterns = new Dictionary<int, int[]>
+        public static Dictionary<int, string> DegitPatterns = new Dictionary<int, string>
         {
-            { 0, new int[] { 1, 1, 1, 0, 1, 1, 1 } },
-            { 1, new int[] { 0, 0, 1, 0, 0, 1, 0 } },
-            { 2, new int[] { 1, 0, 1, 1, 1, 0, 1 } },
-            { 3, new int[] { 1, 0, 1, 1, 0, 1, 1 } },
-            { 4, new int[] { 0, 1, 1, 1, 0, 1, 0 } },
-            { 5, new int[] { 1, 1, 0, 1, 0, 1, 1 } },
-            { 6, new int[] { 1, 1, 0, 1, 1, 1, 1 } },
-            { 7, new int[] { 1, 0, 1, 0, 0, 1, 0 } },
-            { 8, new int[] { 1, 1, 1, 1, 1, 1, 1 } },
-            { 9, new int[] { 1, 1, 1, 1, 0, 1, 1 } },
+            {0, "1110111"},
+            {1, "0010010"},
+            {2, "1011101"},
+            {3, "1011011"},
+            {4, "0111010"},
+            {5, "1101011"},
+            {6, "1101111"},
+            {7, "1010010"},
+            {8, "1111111"},
+            {9, "1111011"},
         };
 
         public static Dictionary<String, int> ReversePatterns = new Dictionary<string, int>
@@ -178,20 +116,80 @@ class Program
             { "1111111" ,8 },
             { "1111011" ,9 },
         };
-        
-        public static int CorrectNumber(int[] Match)
+
+        public static void MakeTransTable()
         {
-            String keyString = String.Join(",", Match);
-            Console.WriteLine(keyString);//改修中途
-            /*if (ReversePatterns.Containskey(keyString))
+            char[] Stnum;
+            int BackValue;
+            for (int i = 0; i < DegitPatterns.Count; i++)
             {
-                ReversePatterns.TryGetValue(keyString, out var name);
-                return name;
+                DegitPatterns.TryGetValue(i, out var bpattern);
+                for (int j = 0; j < MatchLength; j++)
+                {
+                    Stnum = bpattern.ToCharArray();
+                    if (Stnum[j].Equals('1'))
+                    {
+                        Stnum[j] = '0';
+                        string pattern = new String(Stnum);
+                        BackValue = CorrectNumber(pattern);
+                        if (BackValue != -1)
+                        {
+                            DataClass.MinusTable.Add((CorrectNumber(bpattern), BackValue));
+                        }
+                    }
+                }
+                for (int j = 0; j < MatchLength; j++)
+                {
+                    Stnum = bpattern.ToCharArray();
+                    if (Stnum[j].Equals('0'))
+                    {
+                        Stnum[j] = '1';
+                        string pattern = new String(Stnum);
+                        BackValue = CorrectNumber(pattern);
+                        if (BackValue != -1)
+                        {
+                            DataClass.PlusTable.Add((CorrectNumber(bpattern), BackValue));
+                        }
+                    }
+                }
+                for (int j = 0; j < MatchLength; j++)
+                {
+                    Stnum = bpattern.ToCharArray();
+                    if (Stnum[j].Equals('1'))
+                    {
+                        Stnum[j] = '0';
+                        for (int k = 0; k < MatchLength; k++)
+                        {
+                            if (k != j)
+                            {
+                                if (Stnum[k] == '0')
+                                {
+                                    Stnum[k] = '1';
+                                    string pattern = new String(Stnum);
+                                    BackValue = CorrectNumber(pattern);
+                                    if (BackValue != -1)
+                                    {
+                                        DataClass.BothTable.Add((CorrectNumber(bpattern), BackValue));
+                                    }
+                                    Stnum[k] = '0';
+                                }
+                            }
+                        }
+                    }
+                }
+            }            
+        }
+        public static int CorrectNumber(string Match)
+        {
+            if (ReversePatterns.ContainsKey(Match))
+            {
+                ReversePatterns.TryGetValue(Match, out var number);
+                return number;
             }
             else
             {
                 return -1;
-            }*/
+            }
         }
     }
 }
