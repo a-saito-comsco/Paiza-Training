@@ -119,65 +119,91 @@ class Program
 
         public static void MakeTransTable()
         {
-            char[] Stnum;
-            int BackValue;
             for (int i = 0; i < DegitPatterns.Count; i++)
             {
                 DegitPatterns.TryGetValue(i, out var bpattern);
-                for (int j = 0; j < MatchLength; j++)
-                {
-                    Stnum = bpattern.ToCharArray();
-                    if (Stnum[j].Equals('1'))
-                    {
-                        Stnum[j] = '0';
-                        string pattern = new String(Stnum);
-                        BackValue = CorrectNumber(pattern);
-                        if (BackValue != -1)
-                        {
-                            DataClass.MinusTable.Add((CorrectNumber(bpattern), BackValue));
-                        }
-                    }
-                }
-                for (int j = 0; j < MatchLength; j++)
-                {
-                    Stnum = bpattern.ToCharArray();
-                    if (Stnum[j].Equals('0'))
-                    {
-                        Stnum[j] = '1';
-                        string pattern = new String(Stnum);
-                        BackValue = CorrectNumber(pattern);
-                        if (BackValue != -1)
-                        {
-                            DataClass.PlusTable.Add((CorrectNumber(bpattern), BackValue));
-                        }
-                    }
-                }
-                for (int j = 0; j < MatchLength; j++)
-                {
-                    Stnum = bpattern.ToCharArray();
-                    if (Stnum[j].Equals('1'))
-                    {
-                        Stnum[j] = '0';
-                        for (int k = 0; k < MatchLength; k++)
-                        {
-                            if (k != j)
-                            {
-                                if (Stnum[k] == '0')
-                                {
-                                    Stnum[k] = '1';
-                                    string pattern = new String(Stnum);
-                                    BackValue = CorrectNumber(pattern);
-                                    if (BackValue != -1)
-                                    {
-                                        DataClass.BothTable.Add((CorrectNumber(bpattern), BackValue));
-                                    }
-                                    Stnum[k] = '0';
-                                }
-                            }
-                        }
-                    }
-                }
+                var originalDigit = CorrectNumber(bpattern);
+                
+                // マッチ棒削除変換
+                BuildMinusTransforms(bpattern, originalDigit);
+                
+                // マッチ棒追加変換
+                BuildPlusTransforms(bpattern, originalDigit);
+                
+                // マッチ棒移動変換
+                BuildMoveTransforms(bpattern, originalDigit);
             }            
+        }
+
+        private static void BuildMinusTransforms(string bpattern, int originalDigit)
+        {
+            BuildTransforms(bpattern, originalDigit, 
+                (pattern, j) => pattern[j] == '1',  // 条件：マッチ棒が存在
+                (pattern, j) => pattern[j] = '0',   // 操作：マッチ棒を削除
+                (pattern, j) => pattern[j] = '1',   // 復元：マッチ棒を戻す
+                DataClass.MinusTable);
+        }
+
+        private static void BuildPlusTransforms(string bpattern, int originalDigit)
+        {
+            BuildTransforms(bpattern, originalDigit, 
+                (pattern, j) => pattern[j] == '0',  // 条件：マッチ棒が存在しない
+                (pattern, j) => pattern[j] = '1',   // 操作：マッチ棒を追加
+                (pattern, j) => pattern[j] = '0',   // 復元：マッチ棒を削除
+                DataClass.PlusTable);
+        }
+
+        // 共通の変換処理メソッド
+        private static void BuildTransforms(
+            string bpattern, 
+            int originalDigit,
+            Func<char[], int, bool> condition,      // 条件判定
+            Action<char[], int> operation,          // 操作実行
+            Action<char[], int> restore,            // 状態復元
+            List<(int before, int after)> targetTable)
+        {
+            var pattern = bpattern.ToCharArray();
+            for (int j = 0; j < MatchLength; j++)
+            {
+                if (condition(pattern, j))
+                {
+                    operation(pattern, j);
+                    var newPattern = new string(pattern);
+                    var newDigit = CorrectNumber(newPattern);
+                    if (newDigit != -1)
+                    {
+                        targetTable.Add((originalDigit, newDigit));
+                    }
+                    restore(pattern, j); // 元に戻す
+                }
+            }
+        }
+
+        private static void BuildMoveTransforms(string bpattern, int originalDigit)
+        {
+            var pattern = bpattern.ToCharArray();
+            for (int j = 0; j < MatchLength; j++)
+            {
+                if (pattern[j] == '1')
+                {
+                    pattern[j] = '0';
+                    for (int k = 0; k < MatchLength; k++)
+                    {
+                        if (k != j && pattern[k] == '0')
+                        {
+                            pattern[k] = '1';
+                            var newPattern = new string(pattern);
+                            var newDigit = CorrectNumber(newPattern);
+                            if (newDigit != -1)
+                            {
+                                DataClass.BothTable.Add((originalDigit, newDigit));
+                            }
+                            pattern[k] = '0'; // 元に戻す
+                        }
+                    }
+                    pattern[j] = '1'; // 元に戻す
+                }
+            }
         }
         public static int CorrectNumber(string Match)
         {
