@@ -103,19 +103,8 @@ class Program
             {9, "1111011"},
         };
 
-        public static Dictionary<String, int> ReversePatterns = new Dictionary<string, int>
-        {
-            { "1110111" ,0 },
-            { "0010010" ,1 },
-            { "1011101" ,2 },
-            { "1011011" ,3 },
-            { "0111010" ,4 },
-            { "1101011" ,5 },
-            { "1101111" ,6 },
-            { "1010010" ,7 },
-            { "1111111" ,8 },
-            { "1111011" ,9 },
-        };
+        // DegitPatternsから自動生成される逆引き辞書
+        public static Dictionary<string, int> ReversePatterns = DegitPatterns.ToDictionary(x => x.Value, x => x.Key);
 
         public static void MakeTransTable()
         {
