@@ -1,81 +1,84 @@
-using System;//正答率が40%をどうしても越えません
+using System;
 class Program
 {
     static void Main()
     {
-        ScheduleIandO.GetInputs();
-        ScheduleIandO.ScheduleCheck();
-        ScheduleIandO.WorkableDayCount(); 
+        WorkSchedule.ReadInput();
+        WorkSchedule.AnalyzeSchedule();
+        Console.WriteLine(WorkSchedule.GetLongestValidPeriod());
     }
 
-    public static class ScheduleIandO
+    public static class WorkSchedule
     {
-        public static int TotalDays;
-        public static bool[] ScheduleWd;
-        public static bool[] ScheduleOk;
-        public static void GetInputs()
+        private static int totalDays;
+        private static bool[] isHoliday;
+        private static bool[] isValidWeekPart;
+
+        public static void ReadInput()
         {
-            //string line = Console.ReadLine();
-            //TotalDays = int.Parse(line);
-            //line = Console.ReadLine();
-            TotalDays = 20;
-            string line = "1 1 0 1 1 0 0 1 1 1 1 1 0 1 1 1 1 1 0 1";
-            string[] text = line.Split(" ");
-            ScheduleWd = new bool[TotalDays];
-            ScheduleOk = new bool[TotalDays];
-            for (int i = 0; i < TotalDays; i++)
+            totalDays = int.Parse(Console.ReadLine());
+            string[] inputs = Console.ReadLine().Split();
+            isHoliday = new bool[totalDays];
+            isValidWeekPart = new bool[totalDays];
+
+            for (int i = 0; i < totalDays; i++)
             {
+                isHoliday[i] = (0 == int.Parse(inputs[i]));
+                isValidWeekPart[i] = false;
+            }
+        }
+
+        public static void AnalyzeSchedule()
+        {
+            for (int i = 0; i <= totalDays - 7; i++)
+            {
+                if (HasEnoughHolidays(i))
                 {
-                    ScheduleWd[i] = (0 == int.Parse(text[i]));
-                    ScheduleOk[i] = false;
+                    MarkValidPeriod(i);
                 }
             }
         }
-        public static void ScheduleCheck()
+
+        private static bool HasEnoughHolidays(int startIndex)
         {
-            for (int i = 0; i < (TotalDays - 6); i++)
+            int holidayCount = 0;
+            for (int i = startIndex; i < startIndex + 7; i++)
             {
-                WorkableDayJudge(i);
+                if (isHoliday[i]) holidayCount++;
+            }
+            return holidayCount >= 2;
+        }
+
+        private static void MarkValidPeriod(int startIndex)
+        {
+            for (int i = startIndex; i < startIndex + 7; i++)
+            {
+                isValidWeekPart[i] = true;
             }
         }
-        public static void WorkableDayJudge(int j)
+
+        public static int GetLongestValidPeriod()
         {
-            int restDay = 0;
-            for (int i = j; i < (j + 7); i++)
+            int currentLength = 0;
+            int maxLength = 0;
+
+            for (int i = 0; i < totalDays; i++)
             {
-                if (ScheduleWd[i] == true)
+                if (isValidWeekPart[i])
                 {
-                    restDay++;
-                }
-            }
-            if (restDay >= 2)
-            {
-                for (int i = j; i < (j + 7); i++)
-                {
-                    ScheduleOk[i] = true;
-                }
-            }
-        }
-        public static void WorkableDayCount()
-        {
-            int cnt = 0;
-            int max = 0;
-            for (int i = 0; i < TotalDays; i++)
-            {
-                if (ScheduleOk[i] == true)
-                {
-                    cnt += 1;
-                    if (max < cnt)
+                    currentLength++;
+                    if (currentLength >= 7 && currentLength > maxLength)
                     {
-                        max = cnt;                    
+                        maxLength = currentLength;
                     }
                 }
-                if (ScheduleOk[i] == false)
+                else
                 {
-                    cnt = 0;
+                    currentLength = 0;
                 }
             }
-            Console.WriteLine(max);
+
+            return maxLength;
         }
     }
 }
