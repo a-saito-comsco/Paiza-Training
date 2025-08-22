@@ -59,7 +59,7 @@ class Program
                 }
             }
         }
-        public static int Count()
+        public static int Count() // REVIEW: 週休2日の最大勤続日数 → 週休2日の最大連続日数へ
         {
             int cnt = 0;
             int max = 0;
