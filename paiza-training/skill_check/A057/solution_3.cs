@@ -4,6 +4,7 @@ using System.Linq;
 class Program
 {
     delegate int Process(int x, int y);
+    delegate (int x, int y) Direction(int step, int x, int y);
 
     static void Main()
     {
@@ -12,6 +13,7 @@ class Program
         //bd.Show();
         bd.PrintMaxMatch();
     }
+    
     public class GameBoard
     {
         public int Length;
@@ -44,6 +46,7 @@ class Program
                 Console.WriteLine("");
             }
         }
+        
         public void PrintMaxMatch()
         {
             var dgV = new Process(SearchVerticalSequence);
@@ -60,87 +63,73 @@ class Program
             }
             Console.WriteLine(Values.Max());
         }
-        public int SearchVerticalSequence(int x, int y)
+
+        // 共通のシーケンス検索ロジック
+        private int SearchSequence(int x, int y, Direction direction, int maxSteps)
         {
             int cnt = 1;
             int max = 1;
-            for (int l = -1; l < 2; l += 2)
-            {
-                for (int i = 0; i < this.Length - 1; i++)
-                {
-                    if ((this.Board[x + i][y] + l) == this.Board[x + i + 1][y])
-                    {
-                        cnt += 1;
-                        if (max < cnt)
-                        {
-                            max = cnt;
-                        }
-                    }
-                    else
-                    {
-                        cnt = 1;
-                    }
-                }
-            }
-            return max;
-        }
-        public int SearchHorizontalSequence(int x, int y)
-        {
-            int cnt = 1;
-            int max = 1;
-            for (int l = -1; l < 2; l += 2)
-            {
-                for (int j = 0; j < this.Length - 1; j++)
-                {
-                    if ((this.Board[x][y + j] + l) == this.Board[x][y + j + 1])
-                    {
-                        cnt += 1;
-                        if (max < cnt)
-                        {
-                            max = cnt;
-                        }
-                    }
-                    else
-                    {
-                        cnt = 1;
-                    }
-                }
-            }
-            return max;
-        }
-        public int SearchDiagonalSequence(int x, int y)
-        {
-            int cnt = 1;
-            int max = 1;
-            int m;
-            int n;
+
             for (int l = -1; l < 2; l += 2)
             {
                 cnt = 1;
-                for (int k = -1; k < 2; k += 2)
+                for (int step = 0; step < maxSteps; step++)
                 {
-                    m = 0;
-                    n = 0;
-                    while (((x + n + 1) < this.Length) && ((y + m + k) < this.Length) && (x + n + 1) >= 0 && (y + m + k) >= 0)
+                    var (nextX, nextY) = direction(step + 1, x, y);
+
+                    // 境界チェック
+                    if (nextX < 0 || nextX >= this.Length || nextY < 0 || nextY >= this.Length)
+                        break;
+
+                    var (currentX, currentY) = direction(step, x, y);
+                    if (this.Board[nextX][nextY] == (this.Board[currentX][currentY] + l))
                     {
-                        if (this.Board[x + n + 1][y + m + k] == (this.Board[x + n][y + m] + l))
+                        cnt += 1;
+                        if (max < cnt)
                         {
-                            cnt += 1;
-                            if (max < cnt)
-                            {
-                                max = cnt;
-                            }
+                            max = cnt;
                         }
-                        else
-                        {
-                            cnt = 1;
-                        }
-                        m += k;
-                        n += 1;
+                    }
+                    else
+                    {
+                        cnt = 1;
                     }
                 }
-            }   
+            }
             return max;
-        }   
+        }
+
+        // 垂直方向のデリゲート
+        private (int x, int y) VerticalDirection(int step, int x, int y)
+        {
+            return (x + step, y);
+        }
+
+        // 水平方向のデリゲート
+        private (int x, int y) HorizontalDirection(int step, int x, int y)
+        {
+            return (x, y + step);
+        }
+
+        // 対角線方向のデリゲート
+        private (int x, int y) DiagonalDirection(int step, int x, int y)
+        {
+            return (x + step, y + step);
+        }
+
+        public int SearchVerticalSequence(int x, int y)
+        {
+            return SearchSequence(x, y, VerticalDirection, this.Length - 1);
+        }
+
+        public int SearchHorizontalSequence(int x, int y)
+        {
+            return SearchSequence(x, y, HorizontalDirection, this.Length - 1);
+        }
+
+        public int SearchDiagonalSequence(int x, int y)
+        {
+            return SearchSequence(x, y, DiagonalDirection, this.Length - 1);
+        }
     }
 }
